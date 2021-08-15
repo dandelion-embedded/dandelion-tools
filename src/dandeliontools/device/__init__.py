@@ -11,9 +11,17 @@ from timeout_decorator import timeout
 class DandelionDevice:
     """Represents a Dandelion board."""
 
-    pyboard: Pyboard
-    files: Files
+    __pyboard: Pyboard
+    __files: Files
     manifest: DandelionDeviceManifest
+
+    def to_json(self) -> dict:
+        """Convert to JSON."""
+        return {
+            "port": self.__pyboard.serial.portstr,
+            "id": self.get_device_id(),
+            "manifest": self.manifest.to_json(),
+        }
 
     @timeout(2)
     def __init__(self, port: ListPortInfo) -> None:
@@ -23,11 +31,11 @@ class DandelionDevice:
           port: The serial port to use.
         """
 
-        self.pyboard = Pyboard(port.device)
-        self.files = Files(self.pyboard)
+        self.__pyboard = Pyboard(port.device)
+        self.__files = Files(self.__pyboard)
 
         # Try to load the manifest from the board.
-        dandelion_json = self.files.get("dandelion.json")
+        dandelion_json = self.__files.get("dandelion.json")
         manifest_dict = json.loads(dandelion_json)
         self.manifest = DandelionDeviceManifest(**manifest_dict)
 
@@ -40,12 +48,12 @@ class DandelionDevice:
         """
 
         here = Path(__file__).parent
-        script = here/"onboard_scripts/get_device_id.py"
+        script = here / "onboard_scripts/get_device_id.py"
 
-        self.pyboard.enter_raw_repl()
-        res = self.pyboard.execfile(script)
-        self.pyboard.exit_raw_repl()
+        self.__pyboard.enter_raw_repl()
+        res = self.__pyboard.execfile(script)
+        self.__pyboard.exit_raw_repl()
 
         # Due to serial transmission, we need to strip the string twice.
         # It is send as: b"b'<ID>'\r\n" (bytes).
-        return str(res, 'utf-8').strip().lstrip("b'").rstrip("'")
+        return str(res, "utf-8").strip().lstrip("b'").rstrip("'")
