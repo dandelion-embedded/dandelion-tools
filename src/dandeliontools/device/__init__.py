@@ -14,11 +14,12 @@ class DandelionDevice:
     __pyboard: Pyboard
     __files: Files
     manifest: DandelionDeviceManifest
+    
 
     def to_json(self) -> dict:
         """Convert to JSON."""
         return {
-            "port": self.__pyboard.serial.portstr,
+            "port": self.get_port_name(),
             "id": self.get_device_id(),
             "manifest": self.manifest.to_json(),
         }
@@ -57,3 +58,12 @@ class DandelionDevice:
         # Due to serial transmission, we need to strip the string twice.
         # It is send as: b"b'<ID>'\r\n" (bytes).
         return str(res, "utf-8").strip().lstrip("b'").rstrip("'")
+
+    def get_port_name(self) -> str:
+        """Returns the port name.
+
+        Returns:
+          The port name.
+        """
+
+        return self.__pyboard.serial.portstr

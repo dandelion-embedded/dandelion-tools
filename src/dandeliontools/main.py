@@ -45,6 +45,7 @@ def list(ctx):
     logging.debug("Requesting serial port list.")
     devices = list_devices(show_progress=not json_output)
 
+    # Only print JSON output if the user requested it. Then exit.
     if json_output:
         click.echo(json.dumps([device.to_json() for device in devices], indent=4))
         return
@@ -62,25 +63,9 @@ def list(ctx):
 
     for device in devices:
         table.add_row(
-            device.__pyboard.serial.portstr,
+            device.get_port_name(),
             device.get_device_id(),
             device.manifest.version,
         )
 
     Console().print(table)
-
-
-@cli.command()
-@click.option(
-    "-p",
-    "--port",
-    default=None,
-    help="The serial port to use for installation.",
-    required=True,
-    metavar="<PORT>",
-)
-def install(port: str):
-    """Installs Dandelion Core to a Micropython-enabled board."""
-
-    logging.debug(f"Installing Dandelion Core to device connected at {port}.")
-    raise NotImplementedError()

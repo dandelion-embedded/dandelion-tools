@@ -25,7 +25,7 @@ def list_devices(show_progress: bool = False) -> List[DandelionDevice]:
                 logging.debug(f"Skipping port {ports[n].device} due to error: {e}")
                 continue
 
-            logging.debug(f"Discovered a device at {device.__pyboard.serial.portstr}.")
+            logging.debug(f"Discovered a device at {ports[n].device}.")
     else:
 
         # Silent mode.
