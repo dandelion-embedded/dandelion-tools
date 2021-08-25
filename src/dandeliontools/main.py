@@ -7,8 +7,11 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.table import Table
 from serial.tools import list_ports
+from serial import Serial
+from serial.tools.list_ports_common import ListPortInfo
 
 from dandeliontools.customlogging import setup_logging
+from dandeliontools.device import DandelionDevice
 from dandeliontools.device.list import list_devices
 
 
@@ -63,9 +66,18 @@ def list(ctx):
 
     for device in devices:
         table.add_row(
-            device.get_port_name(),
-            device.get_device_id(),
-            device.manifest.version,
+            device.to_json()["port"],
+            device.to_json()["id"],
+            device.to_json()["manifest"]["version"],
         )
 
     Console().print(table)
+
+@cli.command()
+@click.option("--port", "-p", default=None, help="The serial port to connect to.")
+@click.pass_context
+def status(ctx: dict, port: str):
+    """Shows the status of the selected Dandelion board."""
+
+    device = DandelionDevice(ListPortInfo(port))
+    print(json.dumps(device.get_status(), indent=4))

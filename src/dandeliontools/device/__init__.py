@@ -67,3 +67,21 @@ class DandelionDevice:
         """
 
         return self.__pyboard.serial.portstr
+
+    def get_status(self) -> dict:
+        """Returns the status of the device as a dictionary.
+
+        Returns:
+          The status of the device.
+        """
+
+        here = Path(__file__).parent
+        script = here / "onboard_scripts/get_device_status.py"
+
+        self.__pyboard.enter_raw_repl()
+        res = self.__pyboard.execfile(script)
+        self.__pyboard.exit_raw_repl()
+
+        # Due to serial transmission, we need to strip the string twice.
+        # It is send as: b"b'<ID>'\r\n" (bytes).
+        return json.loads(res)
